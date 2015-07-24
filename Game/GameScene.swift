@@ -10,18 +10,34 @@ import SpriteKit
 
 class GameScene: SKScene {
     var userIsDragging = false
-    var sprite:SKSpriteNode = SKSpriteNode()
-    
+    var sprite:SKShapeNode = SKShapeNode()
+    var cropNode = SKCropNode()
+
     override func didMoveToView(view: SKView) {
         /* Setup your scene here */
         tileBackground()
         
-        sprite.size = CGSizeMake(100, 100)
-        sprite.color = UIColor.redColor()
         sprite.position = CGPointMake(100, 100)
+        
+        
+        var circleMask = SKShapeNode()
+        var path = CGPathCreateMutable()
+        CGPathAddArc(path, nil, CGRectGetMidX(self.frame), CGRectGetMidY(self.frame), CGFloat(50), CGFloat(0), CGFloat(M_PI*2), true);
+        sprite.path = path
+    
+        
+        cropNode.maskNode = sprite
+        cropNode.position = CGPointMake(100, 100)
+        
+        var circle = SKSpriteNode();
         self.addChild(sprite)
         
         
+        var backgroundNode = SKSpriteNode();
+        backgroundNode.size = CGSizeMake(1000, 1000)
+        backgroundNode.color = UIColor.blackColor()
+        self.addChild(backgroundNode)
+        backgroundNode.addChild(circle)
     }
     
     override func touchesBegan(touches: Set<NSObject>, withEvent event: UIEvent) {
@@ -29,16 +45,16 @@ class GameScene: SKScene {
         var touch = touches.first as! UITouch
         let location = touch.locationInNode(self)
         
-        if CGRectContainsPoint(sprite.frame, location){
+        if CGRectContainsPoint(cropNode.frame, location){
             userIsDragging = true
-            sprite.position = location
+            cropNode.position = location
         } else {
             
-            add( mult(norm(CGVectorMake(location.x - sprite.position.x, location.y - sprite.position.y)), s: 1000), CGVectorMake(sprite.position.x, sprite.position.y))
+            add( mult(norm(CGVectorMake(location.x - cropNode.position.x, location.y - cropNode.position.y)), s: 1000), CGVectorMake(cropNode.position.x, cropNode.position.y))
             
             let projectile = SKSpriteNode(color: UIColor.redColor(), size: CGSizeMake(10, 10))
-            projectile.runAction(SKAction.repeatActionForever(SKAction.moveBy(CGVectorMake(location.x - self.sprite.position.x, location.y - self.sprite.position.y), duration: 1)))
-            projectile.position = sprite.position
+            projectile.runAction(SKAction.repeatActionForever(SKAction.moveBy(CGVectorMake(location.x - self.cropNode.position.x, location.y - self.cropNode.position.y), duration: 1)))
+            projectile.position = cropNode.position
             self.addChild(projectile)
         }
         
@@ -84,7 +100,7 @@ class GameScene: SKScene {
         var touch = touches.first as! UITouch
         let location = touch.locationInNode(self)
         if userIsDragging {
-            sprite.position = location
+            cropNode.position = location
         }
         
     }
